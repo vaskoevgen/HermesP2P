@@ -1,0 +1,83 @@
+# HermesP2P — Full Summary for LLMs
+
+> Decentralized, ephemeral peer-to-peer messaging. No servers, no persistence, no compromise.
+
+## What it is
+
+HermesP2P is a browser-based peer-to-peer messaging network. The website hp2p.net runs a thin Flask + WebSocket relay whose only job is to bootstrap peer discovery — it holds no user accounts, stores no messages, and cannot read ciphertext. Once peers are connected, messages traverse the mesh directly.
+
+Every participant is both a client and a relay. The network's resilience scales with participation.
+
+## Architecture
+
+### Transport
+
+- WebSocket relay at `/ws` on the bootstrap host. The relay forwards opaque frames between connected peers without inspecting them, except to answer `peer_exchange_request` messages with the current peer count. Peer IP addresses are never exposed in responses.
+- Peers hold ephemeral state only. The relay uses an in-memory peer table (`peers` dict) and a single Fly.io machine; horizontal scaling is not required because the relay is stateless beyond the connection set.
+
+### Cryptography
+
+- **Identity**: Ed25519 signing keypair. The public key is the user's identity across the network. Private keys never leave the browser.
+- **Key exchange**: X25519 for establishing per-DM shared secrets.
+- **Encryption**: XSalsa20-Poly1305 via NaCl (TweetNaCl in the browser).
+  - **Channels** (public and private) use symmetric `secretbox`. Public channels publish the key; private channels distribute it out-of-band.
+  - **DMs** use ephemeral X25519 keypairs per message for perfect forward secrecy.
+- **Pseudonyms**: per-channel HKDF-derived pseudonyms so the same user appears under different stable handles in different channels.
+
+### Configuration
+
+A user's identity — keys, subscribed channels, friend list, aliases — lives in a JSON file conforming to `hp2p-config-schema.json`. The file is generated in-browser and downloaded by the user. The `/validate-config` endpoint checks schema conformance but does not retain the file. Users are free to edit the file directly.
+
+### Message propagation
+
+Messages carry a Time-to-Live (TTL) hop count. Each peer relays to its neighbors until TTL expires, ensuring reachability without unbounded flooding. Peer diversity heuristics favor connections that maximize graph coverage.
+
+## Endpoints (host)
+
+| Path | Method | Purpose |
+|------|--------|---------|
+| `/` | GET | Main client page (loads the in-browser peer) |
+| `/client` | GET | Alternate client view |
+| `/ws` | WS | Bootstrap relay — peer exchange + opaque frame forwarding |
+| `/validate-config` | POST | JSON schema validation for user config files (stateless) |
+| `/robots.txt`, `/sitemap.xml`, `/llms.txt`, `/llms-full.txt` | GET | Agent discovery |
+| `/.well-known/*` | GET | Standard discovery endpoints (api-catalog, oauth-*, http-message-signatures-directory) |
+
+## What the server can and cannot see
+
+**Can see**: the fact that a connection exists, connection duration, total peer count, opaque frame byte counts.
+
+**Cannot see**: message plaintext, sender/receiver identity within a channel (beyond pseudonyms), channel membership, friend graphs, config file contents after validation.
+
+## Deployment
+
+- Python 3.11+, Flask 3.1, flask-sock for WebSockets, jsonschema for config validation.
+- Container: `python:3.11-slim`, single process.
+- Host: Fly.io (`ord` region), single machine (`min_machines_running = 1`, `max_machines_running = 1`) — required because peer state is in-process.
+- Port 8080 internal, HTTPS forced at the edge.
+
+## Design choices
+
+- **No database**: persistence would create metadata that could be subpoenaed or breached. The entire point is that there is nothing to compromise.
+- **Single relay machine**: sharding peer state across machines would require a coordination layer, which would become an attack surface. The relay is intentionally a single failure point for the bootstrap function only — peers that have already discovered each other continue communicating if the relay goes offline.
+- **Client-managed config**: users own their identity. Losing the config file means losing the identity. This is a feature, not a bug — there is no "recover account" flow for an operator to coerce.
+
+## Privacy Stack context
+
+HermesP2P addresses the "messages in transit" failure mode in a broader privacy architecture:
+
+| Layer | Failure mode addressed | Project |
+|-------|------------------------|---------|
+| Vault | Key theft, operator coercion | [Signet](https://signet.tools) |
+| Authorization | Over-permissioned agents | [Agent-Safe (SPL)](https://jmcentire.github.io/agent-safe/) |
+| Documents | Tampering, unverifiable provenance | [Tessera](https://jmcentire.github.io/tessera/) |
+| Storage | Operator reads user data | [BlindDB](https://jmcentire.github.io/BlindDB/) |
+| Messaging | Persistent metadata, centralized relay | **HermesP2P** |
+
+## License
+
+See [LICENSE](https://github.com/jmcentire/HermesP2P/blob/main/LICENSE).
+
+## Contact
+
+contact@hp2p.net

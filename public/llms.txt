@@ -1,0 +1,34 @@
+# HermesP2P
+
+> Decentralized, ephemeral peer-to-peer messaging. No servers, no persistence, no compromise.
+
+HermesP2P is a transient communication network with a cryptographically secure messaging overlay. Every node contributes to the network's resilience — no centralized servers store or relay your messages. The hp2p.net host is a thin WebSocket relay that bootstraps peers; message content never touches the server in readable form.
+
+## Core properties
+
+- **Decentralized**: peer-to-peer mesh; the relay is a bootstrap convenience, not a trust anchor.
+- **Ephemeral**: messages are not persisted on any node.
+- **End-to-end encrypted**: Ed25519 signatures, X25519 key exchange, XSalsa20-Poly1305 (NaCl) authenticated encryption. DMs use ephemeral X25519 for forward secrecy. Channels use NaCl secretbox (symmetric key).
+- **User-sovereign config**: keys, channels, and friends live in a downloadable JSON config file the user controls.
+
+## Links
+
+- [Homepage](https://hp2p.net/)
+- [Client](https://hp2p.net/client)
+- [Source](https://github.com/jmcentire/HermesP2P)
+- [Long-form summary](https://hp2p.net/llms-full.txt)
+- [Book: *Privacy* (McEntire)](https://a.co/d/05PSJFBK)
+
+## Privacy stack
+
+HermesP2P is one layer in a broader architecture:
+
+- **Signet** — cryptographic vault, ZK proofs, Ed25519 root of trust. https://signet.tools
+- **Agent-Safe (SPL)** — authorization policy in the token. https://jmcentire.github.io/agent-safe/
+- **Tessera** — self-validating documents. https://jmcentire.github.io/tessera/
+- **BlindDB** — storage the operator cannot read. https://jmcentire.github.io/BlindDB/
+- **HermesP2P** — this project.
+
+## Contact
+
+contact@hp2p.net

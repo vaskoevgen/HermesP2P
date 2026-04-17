@@ -422,5 +422,29 @@
     });
 </script>
 
+<!-- WebMCP (A6): advertise a minimal tool to in-page AI agents via navigator.modelContext. -->
+<script>
+    (function() {
+        if (typeof navigator === 'undefined' || !navigator.modelContext || typeof navigator.modelContext.provideContext !== 'function') {
+            return;
+        }
+        try {
+            navigator.modelContext.provideContext({
+                tools: [
+                    {
+                        name: "get_site_info",
+                        description: "Return Hermes P2P metadata",
+                        inputSchema: { type: "object", properties: {} },
+                        execute: async () => ({
+                            site: "hp2p.net",
+                            description: "Hermes P2P — content-addressable pull-based P2P relay"
+                        })
+                    }
+                ]
+            });
+        } catch (e) { /* no-op: WebMCP is best-effort */ }
+    })();
+</script>
+
 </body>
 </html>

@@ -1,0 +1,36 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://hp2p.net/",
+      "service-desc": [
+        {
+          "href": "https://hp2p.net/llms-full.txt",
+          "type": "text/markdown",
+          "title": "HermesP2P service description (Markdown for agents)"
+        },
+        {
+          "href": "https://hp2p.net/llms.txt",
+          "type": "text/markdown",
+          "title": "HermesP2P short service summary"
+        }
+      ],
+      "service-meta": [
+        {
+          "href": "https://hp2p.net/sitemap.xml",
+          "type": "application/xml",
+          "title": "Sitemap"
+        }
+      ],
+      "item": [
+        {
+          "href": "wss://hp2p.net/ws",
+          "title": "WebSocket relay (peer bootstrap)"
+        },
+        {
+          "href": "https://hp2p.net/validate-config",
+          "title": "Config schema validation (POST multipart/form-data)"
+        }
+      ]
+    }
+  ]
+}
