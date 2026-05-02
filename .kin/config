@@ -1,0 +1,39 @@
+name: hermesp2p
+audience: public
+description: >
+  Decentralized ephemeral peer-to-peer messaging. No servers, no
+  persistence. Ed25519 signing with NaCl encryption. Messages exist
+  only in transit and in recipient memory. Deployed at hp2p.net.
+
+domains:
+  - p2p-networking
+  - privacy
+  - cryptography
+  - ephemeral-messaging
+  - decentralization
+
+voice:
+  tone: minimal, privacy-absolute
+  principles:
+    - No message persistence — ephemeral by architecture, not policy
+    - Ed25519 identity is the only durable state
+    - Peer discovery via signaling, not central registry
+    - Padding defeats traffic analysis
+  anti-patterns:
+    - Storing messages on any server
+    - Centralized peer registry
+    - Unpadded messages that leak content length
+
+standards:
+  code_review:
+    - NaCl for all encryption operations
+    - Ed25519 for all signing
+    - No server-side message storage under any condition
+  documentation:
+    - Protocol documented with wire format
+
+connects_to:
+  - signet
+  - blinddb
+  - tessera
+  - agent-safe
